@@ -2,7 +2,8 @@ const Router = require("koa-router");
 const router = new Router();
 
 router.post("/login", async (ctx, next) => {
-  const { uvername, password } = ctx.request.body;
+  const { username, password } = ctx.request.body;
+  console.log(username, password);
   /*    
     ctx.cookies.set("username", value.username, {
       maxAge: 20 * 60 * 60 * 1000,

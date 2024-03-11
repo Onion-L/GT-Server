@@ -4,8 +4,8 @@ const logger = require("koa-logger");
 const bodyParser = require("koa-bodyparser");
 const cors = require("@koa/cors");
 const corsOption = require("./config/cors");
-const db = require("./database/db");
-const router = require("./router/index.js");
+const db = require("./src/database/db.js");
+const router = require("./src/router/index.js");
 
 const port = process.env.PORT || 3000;
 
