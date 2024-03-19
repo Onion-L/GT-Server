@@ -1,8 +1,8 @@
-const Router = require("koa-router");
-const router = new Router();
-const authRouter = require("./auth.js");
+import Router from "koa-router";
+import { routes, allowedMethods } from "./auth.js";
 
-router.use("/api", authRouter.routes(), authRouter.allowedMethods());
+const router = new Router();
+router.use("/api", routes(), allowedMethods());
 
 router.get("/", async (ctx, next) => {
   ctx.response.body = "hello";
@@ -11,4 +11,4 @@ router.get("/", async (ctx, next) => {
     domain: "localhost",
   });
 });
-module.exports = router;
+export default router;
