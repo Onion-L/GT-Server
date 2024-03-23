@@ -1,5 +1,6 @@
-import Router from "koa-router";
-import User from "../model/userModel";
+const Router = require("koa-router");
+const User = require("../model/userModel.js");
+const bcrypt = require("bcrypt");
 
 const router = new Router();
 const validatePassword = (password) => {
@@ -30,16 +31,15 @@ router.post("/register", async (ctx, next) => {
   const SALT = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(password, SALT);
   //add new user
-  const newUser = User.create({
-    username,
-    userPassword: hashedPassword,
-    email,
-  });
+
   try {
-    //save user
-    const savedUser = await newUser.save();
+    const newUser = await User.create({
+      username,
+      userPassword: hashedPassword,
+      email,
+    });
     ctx.status = 201; // Created
-    ctx.body = { message: "User created successfully", userId: savedUser.id };
+    ctx.body = { message: "User created successfully", userId: newUser.id };
   } catch (error) {
     ctx.status = 500;
     ctx.body = { message: "Failed to create user", error: error.message };
@@ -62,4 +62,4 @@ router.post("/login", async (ctx, next) => {
   ctx.body = "cookie is set";
 });
 
-export default router;
+module.exports = router;
