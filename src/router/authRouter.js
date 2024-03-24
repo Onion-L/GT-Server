@@ -1,56 +1,30 @@
 const Router = require("koa-router");
 const bcrypt = require("bcrypt");
+const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 const User = require("../model/userModel.js");
+const registerValid = require("../utils/index.js");
 
 const router = new Router();
-const validatePassword = (password) => {
-  const regex =
-    /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
-  return regex.test(password);
-};
-
-const validateEmail = (email) => {
-  const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return regex.test(email);
-};
 
 router.post("/register", async (ctx, next) => {
-  const { username, password, email, role } = ctx.request.body;
-  if (!username || !password) {
-    ctx.status = 400;
-    ctx.body = { message: "Please provide a username and password" };
-    return;
-  } else if (!validatePassword(password)) {
-    ctx.status = 400;
-    ctx.body = { message: "The password does not match the rule" };
-    return;
-  } else if (!validateEmail(email)) {
-    ctx.status = 400;
-    ctx.body = { message: "The email was not formatted correctly" };
-    return;
-  }
+  const { username, password, email } = ctx.request.body;
+  registerValid(username, password, email);
 
   const existingUser = await User.findOne({ username });
   if (existingUser) {
     ctx.status = 400;
     ctx.body = { message: "The username is already taken" };
-    return;
   }
 
   const SALT = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(password, SALT);
-  if (!role) {
-    role = "user";
-  }
-
   //add new user
   try {
     const newUser = await User.create({
       username,
       userPassword: hashedPassword,
       email,
-      role,
     });
     ctx.status = 201; // Created
     ctx.body = {
@@ -69,18 +43,14 @@ router.post("/login", async (ctx, next) => {
   if (!user) {
     ctx.status = 404;
     ctx.body = { message: "User Not Found" };
-  } else {
-    console.log(username, password);
   }
 
   const isMatch = await bcrypt.compare(password, user.userPassword);
   if (!isMatch) {
     ctx.status = 401;
     ctx.body = { message: "Password is not right" };
-  } else {
-    console.log("Hello", user.username);
   }
-  const token = jwt.sign({ data: user }, "your_secret_key", {
+  const token = jwt.sign({ data: user }, process.env.SECRET_KEY, {
     expiresIn: "7d",
   });
   ctx.status = 200;
@@ -89,13 +59,30 @@ router.post("/login", async (ctx, next) => {
     message: "Login successful",
     token,
   };
+  //{TODO}
+  /*ctx.cookies.set("username", user.username, {
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+    secure: false,
+    domain: "localhost",
+    path: "/login",
+  });
+  */
+});
 
-  // ctx.cookies.set("username", user.username, {
-  //   maxAge: 7 * 24 * 60 * 60 * 1000,
-  //   secure: false,
-  //   domain: "localhost",
-  //   path: "/login",
-  // });
+router.put("/role_update", async (ctx, next) => {
+  try {
+    const decoded = jwt.verify(token, process.env.SECRET_KEY);
+    if (!decoded) {
+      ctx.status = 401;
+      ctx.body = { message: "401 Unauthorized" };
+    }
+
+    const { username, updateData } = ctx.request.body;
+
+    const query = { username: username };
+    const update = { $set: { role: role } };
+    User.updateOne(query);
+  } catch (error) {}
 });
 
 module.exports = router;
