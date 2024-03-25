@@ -3,15 +3,15 @@ const mongoose = require("mongoose");
 const { Schema, model } = mongoose;
 
 const playerSchema = new Schema({
-  name: String,
-  number: String,
-  position: String,
-  nationality: String,
-  image: String,
-  detail_image: String,
+  name: { type: String, required: true },
+  number: { type: String, required: true },
+  position: { type: String, required: true },
+  nationality: { type: String, required: true },
+  image: { type: String, required: true },
+  detail_image: { type: String, required: true },
   stats: {
-    age: String,
-    appearance: String,
+    age: { type: String, required: true },
+    appearance: { type: String, required: true },
     clean: String,
     goal: String,
   },
