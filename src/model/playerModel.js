@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const { Schema, model } = mongoose;
 
 const playerSchema = new Schema({
+  id: { type: Number },
   name: { type: String, required: true },
   number: { type: String, required: true },
   position: { type: String, required: true },

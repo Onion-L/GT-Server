@@ -4,7 +4,7 @@ const Match = require("../model/matchModel");
 const router = new Router();
 
 router.get("/players", async (ctx, next) => {
-  const playerData = await Player.find();
+  const playerData = await Player.find().sort({ id: 1 });
   ctx.status = 200;
   ctx.body = playerData;
 });
