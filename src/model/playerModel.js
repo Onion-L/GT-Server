@@ -10,6 +10,7 @@ const playerSchema = new Schema({
   nationality: { type: String, required: true },
   image: { type: String, required: true },
   detail_image: { type: String, required: true },
+  salary_num: String,
   stats: {
     age: { type: String, required: true },
     appearance: { type: String, required: true },

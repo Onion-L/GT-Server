@@ -59,8 +59,12 @@ router.post("/register", async (ctx, next) => {
 
 router.post("/login", async (ctx, next) => {
   const { username, password, isRemembered } = ctx.request.body;
+  if (!username || !password) {
+    ctx.status = 400;
+    ctx.body = { message: "Username or password cannot be empty" };
+    return;
+  }
   const user = await User.findOne({ username });
-
   if (!user) {
     ctx.status = 404;
     ctx.body = { message: "User Not Found" };

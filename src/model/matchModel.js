@@ -4,23 +4,21 @@ const { Schema, model } = mongoose;
 
 const matchSchema = new mongoose.Schema({
   id: Number,
-  name: String,
+  name: { home: String, away: String },
   date: String,
   result: String,
   stats: {
-    "Manchester United": {
-      goals: Number,
-      possession: Number,
-      shots_on_target: Number,
-      shots_off_target: Number,
-      corners: Number,
-      fouls: Number,
-      yellow_cards: Number,
-      red_cards: Number,
-      offsides: Number,
-      passes: Number,
-      pass_accuracy: Number,
-    },
+    goals: Number,
+    possession: Number,
+    shots_on_target: Number,
+    shots_off_target: Number,
+    corners: Number,
+    fouls: Number,
+    yellow_cards: Number,
+    red_cards: Number,
+    offsides: Number,
+    passes: Number,
+    pass_accuracy: Number,
   },
 });
 
