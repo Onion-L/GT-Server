@@ -13,9 +13,9 @@ const playerSchema = new Schema({
   salary_num: String,
   stats: {
     age: { type: String, required: true },
-    appearance: { type: String, required: true },
-    clean: String,
-    goal: String,
+    appearance: { type: Number, required: true },
+    clean: Number,
+    goal: Number,
   },
 });
 

@@ -4,7 +4,7 @@ const { model } = mongoose;
 
 const matchSchema = new mongoose.Schema({
   name: { home: String, away: String },
-  date: String,
+  date: { type: String, unique: true },
   result: { type: String, require: true, enum: ["win", "draw", "lost"] },
   stats: {
     goals: Number,

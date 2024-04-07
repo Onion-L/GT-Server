@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const StatSchema = new mongoose.Schema({
   name: String,
-  appearance: Number,
+  appearance: { type: Number, enum: [0, 1] },
   minutes: Number,
   save: Number,
   goals: Number,
@@ -26,7 +26,7 @@ const StatSchema = new mongoose.Schema({
 });
 
 const TestSchema = new mongoose.Schema({
-  date: { type: Date, require: true },
+  date: { type: Date, require: true, unique: true },
   name: {
     home: { type: String, require: true },
     away: { type: String, require: true },

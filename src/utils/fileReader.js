@@ -2,14 +2,10 @@ const path = require("path");
 const fs = require("fs");
 const XLSX = require("xlsx");
 
-const fileReader = () => {
+const fileReader = (filename) => {
   return new Promise((reselve, reject) => {
     const dirPath = path.join(__dirname, "../uploads/");
-    const fileNames = fs.readdirSync(dirPath);
-    console.log(fileNames);
-    const workbook = XLSX.readFile(
-      path.join(dirPath, fileNames[fileNames.length - 1])
-    );
+    const workbook = XLSX.readFile(path.join(dirPath, `${filename}.xlsx`));
     const sheetName = workbook.SheetNames[0];
     const worksheet = workbook.Sheets[sheetName];
     // Convert worksheets to JSON objects

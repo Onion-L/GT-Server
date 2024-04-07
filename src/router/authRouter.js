@@ -95,6 +95,7 @@ router.post("/login", async (ctx, next) => {
     code: 200,
     message: "Login successful",
     token,
+    username,
   };
 });
 
