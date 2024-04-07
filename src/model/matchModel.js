@@ -1,17 +1,16 @@
 const mongoose = require("mongoose");
 
-const { Schema, model } = mongoose;
+const { model } = mongoose;
 
 const matchSchema = new mongoose.Schema({
-  id: Number,
   name: { home: String, away: String },
   date: String,
-  result: String,
+  result: { type: String, require: true, enum: ["win", "draw", "lost"] },
   stats: {
     goals: Number,
     possession: Number,
+    shots: Number,
     shots_on_target: Number,
-    shots_off_target: Number,
     corners: Number,
     fouls: Number,
     yellow_cards: Number,
