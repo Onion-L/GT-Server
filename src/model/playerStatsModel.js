@@ -25,7 +25,7 @@ const StatSchema = new mongoose.Schema({
   offsides: Number,
 });
 
-const TestSchema = new mongoose.Schema({
+const PlayerStatsSchema = new mongoose.Schema({
   date: { type: Date, require: true, unique: true },
   name: {
     home: { type: String, require: true },
@@ -36,6 +36,6 @@ const TestSchema = new mongoose.Schema({
   stats: [StatSchema], // 将 StatSchema 作为数组元素类型
 });
 
-const Test = mongoose.model("Test", TestSchema);
+const PlayerStats = mongoose.model("PlayerStats", PlayerStatsSchema);
 
-module.exports = Test;
+module.exports = PlayerStats;
