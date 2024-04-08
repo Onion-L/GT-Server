@@ -88,6 +88,13 @@ router.put("/tasks", async (ctx, next) => {
   });
 });
 
+router.get("/stats", async (ctx, next) => {
+  const statsData = await PlayerStats.find();
+
+  ctx.status = 200;
+  ctx.body = statsData;
+});
+
 router.post("/upload", upload.single("match"), async (ctx, next) => {
   const { home, date, away, result, possession } = ctx.request.body;
   const matchData = await fileReader(date);
