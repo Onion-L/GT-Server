@@ -173,7 +173,7 @@ router.get("/matches", async (ctx, next) => {
       totalDrawNum: 0,
     };
 
-    const matchData = await Match.find();
+    const matchData = await Match.find().sort({ date: 1 });
     const statsSummary = matchData.reduce((accumulator, currentValue) => {
       accumulator.totalGoals += currentValue.stats.goals;
       accumulator.totalYellowCards += currentValue.stats.yellow_cards;
