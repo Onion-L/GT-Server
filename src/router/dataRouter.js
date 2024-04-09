@@ -6,7 +6,9 @@ const Player = require("../model/playerModel");
 const Match = require("../model/matchModel");
 const Task = require("../model/taskModel");
 const PlayerStats = require("../model/playerStatsModel");
+const players = require("./players");
 const fileReader = require("../utils/fileReader");
+const updatePlayerStats = require("../utils/calculate");
 const router = new Router();
 
 //  Set the multer's storage options
@@ -89,15 +91,39 @@ router.put("/tasks", async (ctx, next) => {
 });
 
 router.get("/stats", async (ctx, next) => {
-  const statsData = await PlayerStats.find();
+  // const statsData = await PlayerStats.find();
+  // // console.log(statsData.stats);
+  // const statsStore = { matchId: "", date: "", stats: [] };
+  // let totalStats = {};
+  // let appearances = 0;
+  // statsData.forEach((player) => {
+  //   if (player.appearance > 0) {
+  //     appearances += player.appearance; // 累加出场次数
+  //     Object.keys(player).forEach((key) => {
+  //       if (key !== "name" && key !== "appearance") {
+  //         totalStats[key] = (totalStats[key] || 0) + player[key];
+  //       }
+  //     });
+  //   }
+  // });
+
+  Player.create(players);
 
   ctx.status = 200;
-  ctx.body = statsData;
+  ctx.body = "add";
 });
 
 router.post("/upload", upload.single("match"), async (ctx, next) => {
   const { home, date, away, result, possession } = ctx.request.body;
   const matchData = await fileReader(date);
+  matchData.forEach(async (element) => {
+    const player = await Player.findOne({ name: element.name });
+    const newData = updatePlayerStats(player, element);
+    const newPlayerData = await Player.updateOne(
+      { name: element.name },
+      { stats: newData.stats }
+    );
+  });
 
   const initialStats = {
     goals: 0,
@@ -168,6 +194,7 @@ router.post("/upload", upload.single("match"), async (ctx, next) => {
     });
 });
 
+// get match data
 router.get("/matches", async (ctx, next) => {
   try {
     const totalStats = {
@@ -209,6 +236,7 @@ router.get("/matches", async (ctx, next) => {
   }
 });
 
+// delete match data
 router.delete("/match", async (ctx) => {
   const date = ctx.request.query.date;
   const dirPath = path.join(__dirname, "../uploads");

@@ -13,11 +13,28 @@ const playerSchema = new Schema({
   salary_num: Number,
   stats: {
     age: { type: String, required: true },
-    appearance: { type: Number, required: true },
-    clean: Number,
-    goal: Number,
+    appearance: Number,
+    minutes: Number,
+    save: Number,
+    goals: Number,
+    assist: Number,
+    shots: Number,
+    shots_on_target: Number,
+    corners: Number,
+    yellow_cards: Number,
+    red_cards: Number,
+    passes: Number,
+    key_pass: Number,
+    pass_accuracy: Number,
+    rating: Number,
+    tackle: Number,
+    interception: Number,
+    clearance: Number,
+    dribble_success: Number,
+    lose_possession: Number,
+    fouls: Number,
+    offsides: Number,
   },
 });
-
 const Player = model("Player", playerSchema);
 module.exports = Player;
