@@ -99,20 +99,4 @@ router.post("/login", async (ctx, next) => {
   };
 });
 
-// router.put("/role_update", async (ctx, next) => {
-//   try {
-//     const decoded = jwt.verify(token, process.env.SECRET_KEY);
-//     if (!decoded) {
-//       ctx.status = 401;
-//       ctx.body = { message: "401 Unauthorized" };
-//     }
-
-//     const { username, updateData } = ctx.request.body;
-
-//     const query = { username: username };
-//     const update = { $set: { role: role } };
-//     User.updateOne(query);
-//   } catch (error) {}
-// });
-
 module.exports = router;

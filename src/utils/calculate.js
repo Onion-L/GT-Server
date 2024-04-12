@@ -9,4 +9,8 @@ const updatePlayerStats = (originalData, updateData) => {
   return originalData;
 };
 
-module.exports = updatePlayerStats;
+const calculateAverage = (total, count, round = false) => {
+  const average = total / count;
+  return round ? Math.round(average) : average;
+};
+module.exports = { updatePlayerStats, calculateAverage };

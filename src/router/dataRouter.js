@@ -2,15 +2,15 @@ const Router = require("koa-router");
 const multer = require("@koa/multer");
 const path = require("path");
 const fs = require("fs");
+const PlayerStats = require("../model/playerStatsModel");
 const Player = require("../model/playerModel");
 const Match = require("../model/matchModel");
 const Task = require("../model/taskModel");
-const PlayerStats = require("../model/playerStatsModel");
-const players = require("./players");
+const players = require("../data/players");
+const { updatePlayerStats, calculateAverage } = require("../utils/calculate");
 const fileReader = require("../utils/fileReader");
-const updatePlayerStats = require("../utils/calculate");
-const router = new Router();
 
+const router = new Router();
 //  Set the multer's storage options
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -24,35 +24,50 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 router.get("/players", async (ctx, next) => {
-  const playerData = await Player.find().sort({ id: 1 }).lean();
-  const totalSalary = playerData.reduce((acc, player) => {
-    return acc + player.salary_num;
-  }, 0);
+  try {
+    const playerData = await Player.find().sort({ id: 1 }).lean();
+    const totalSalary = playerData.reduce((acc, player) => {
+      return acc + player.salary_num;
+    }, 0);
 
-  for (let player of playerData) {
-    player.salary_pre = Math.round((player.salary_num / totalSalary) * 500);
+    for (let player of playerData) {
+      player.salary_pre = Math.round((player.salary_num / totalSalary) * 500);
+    }
+    ctx.status = 200;
+    ctx.body = playerData;
+  } catch (error) {
+    ctx.status = 500;
+    ctx.body = { message: error.message };
   }
-  ctx.status = 200;
-  ctx.body = playerData;
 });
 
 router.put("/players", async (ctx, next) => {
-  const playerData = await Player.find().sort({ id: 1 });
-  for (let player of playerData) {
-    console.log(player);
-    await Player.updateOne(
-      { id: player.id },
-      { salary_num: parseInt(player.salary_num) }
-    );
+  try {
+    const playerData = await Player.find().sort({ id: 1 });
+    for (let player of playerData) {
+      console.log(player);
+      await Player.updateOne(
+        { id: player.id },
+        { salary_num: parseInt(player.salary_num) }
+      );
+    }
+    ctx.status = 200;
+    ctx.body = { message: "Task updated successfully" };
+  } catch (error) {
+    ctx.status = 500;
+    ctx.body = { message: error.message };
   }
-  ctx.status = 200;
-  ctx.body = { message: "Task updated successfully" };
 });
 
 router.get("/tasks", async (ctx, next) => {
-  const tasks = await Task.find();
-  ctx.status = 200;
-  ctx.body = tasks;
+  try {
+    const tasks = await Task.find();
+    ctx.status = 200;
+    ctx.body = tasks;
+  } catch (error) {
+    ctx.status = 500;
+    ctx.body = { message: error.message };
+  }
 });
 
 router.post("/tasks", async (ctx, next) => {
@@ -70,12 +85,17 @@ router.post("/tasks", async (ctx, next) => {
 });
 
 router.delete("/tasks", async (ctx, next) => {
-  const id = ctx.request.query.id;
-  console.log(id);
-  await Task.deleteOne({ _id: id }).then((_) => {
-    ctx.status = 200;
-    ctx.body = { message: "Task added successfully" };
-  });
+  try {
+    const id = ctx.request.query.id;
+    console.log(id);
+    await Task.deleteOne({ _id: id }).then((_) => {
+      ctx.status = 200;
+      ctx.body = { message: "Task added successfully" };
+    });
+  } catch (error) {
+    ctx.status = 500;
+    ctx.body = { message: error.message };
+  }
 });
 
 router.put("/tasks", async (ctx, next) => {
@@ -83,47 +103,24 @@ router.put("/tasks", async (ctx, next) => {
   console.log(task);
   await Task.updateOne(
     { _id: task._id },
-    { ...task, updatedAt: Date().now }
+    { ...task, updatedAt: Date.now() }
   ).then((response) => {
     ctx.status = 200;
     ctx.body = { message: "Task updated successfully" };
   });
 });
 
-router.get("/stats", async (ctx, next) => {
-  // const statsData = await PlayerStats.find();
-  // // console.log(statsData.stats);
-  // const statsStore = { matchId: "", date: "", stats: [] };
-  // let totalStats = {};
-  // let appearances = 0;
-  // statsData.forEach((player) => {
-  //   if (player.appearance > 0) {
-  //     appearances += player.appearance; // 累加出场次数
-  //     Object.keys(player).forEach((key) => {
-  //       if (key !== "name" && key !== "appearance") {
-  //         totalStats[key] = (totalStats[key] || 0) + player[key];
-  //       }
-  //     });
-  //   }
-  // });
-
-  Player.create(players);
-
-  ctx.status = 200;
-  ctx.body = "add";
-});
-
 router.post("/upload", upload.single("match"), async (ctx, next) => {
   const { home, date, away, result, possession } = ctx.request.body;
   const matchData = await fileReader(date);
-  matchData.forEach(async (element) => {
-    const player = await Player.findOne({ name: element.name });
-    const newData = updatePlayerStats(player, element);
+  for (const match of matchData) {
+    const player = await Player.findOne({ name: match.name });
+    const newData = updatePlayerStats(player, match);
     const newPlayerData = await Player.updateOne(
-      { name: element.name },
+      { name: match.name },
       { stats: newData.stats }
     );
-  });
+  }
 
   const initialStats = {
     goals: 0,
@@ -207,7 +204,7 @@ router.get("/matches", async (ctx, next) => {
       totalDrawNum: 0,
       totalPossession: 0,
       totalYellowCards: 0,
-      totalShortOnTarget: 0,
+      totalShotOnTarget: 0,
     };
 
     const matchData = await Match.find().sort({ date: 1 });
@@ -218,8 +215,7 @@ router.get("/matches", async (ctx, next) => {
       accumulator.totalPasses += currentValue.stats.passes;
       accumulator.totalPassAccuracy += currentValue.stats.pass_accuracy;
       accumulator.totalPossession += currentValue.stats.possession;
-      accumulator.totalYellowCards += currentValue.stats.yellow_cards;
-      accumulator.totalShortOnTarget += currentValue.stats.shots_on_target;
+      accumulator.totalShotOnTarget += currentValue.stats.shots_on_target;
 
       // accumulator.totalDefence += currentValue.stats.tackle+currentValue.stats.;
       if (currentValue.result === "win") {
@@ -229,20 +225,32 @@ router.get("/matches", async (ctx, next) => {
       }
       return accumulator;
     }, totalStats);
+    const matchCount = matchData.length;
 
-    statsSummary.averagePassAccuracy =
-      statsSummary.totalPassAccuracy / matchData.length;
-    statsSummary.averagePassNum = Math.round(
-      statsSummary.totalPasses / matchData.length
+    statsSummary.averagePassAccuracy = calculateAverage(
+      statsSummary.totalPassAccuracy,
+      matchCount,
+      true
     );
-    statsSummary.averagePossession = Math.round(
-      statsSummary.totalPossession / matchData.length
+    statsSummary.averagePassNum = calculateAverage(
+      statsSummary.totalPasses,
+      matchCount,
+      true
     );
-    statsSummary.averageYellowCards = Math.round(
-      statsSummary.totalYellowCards / matchData.length
+    statsSummary.averagePossession = calculateAverage(
+      statsSummary.totalPossession,
+      matchCount,
+      true
     );
-    statsSummary.averageShortOnTarget = Math.round(
-      statsSummary.totalShortOnTarget / matchData.length
+    statsSummary.averageYellowCards = calculateAverage(
+      statsSummary.totalYellowCards,
+      matchCount,
+      true
+    );
+    statsSummary.averageShotOnTarget = calculateAverage(
+      statsSummary.totalShotOnTarget,
+      matchCount,
+      true
     );
     ctx.status = 200;
     ctx.body = { match: matchData, summary: statsSummary };
@@ -257,28 +265,34 @@ router.get("/matches", async (ctx, next) => {
 router.delete("/match", async (ctx) => {
   const date = ctx.request.query.date;
   const dirPath = path.join(__dirname, "../uploads");
-  console.log(date);
-  console.log(`${dirPath}/${date}.xlsx`);
-  await Promise.all([
-    PlayerStats.deleteOne({ date: date }),
-    Match.deleteOne({ date: date }),
-  ])
-    .then((results) => {
-      console.log(results);
-      ctx.status = 200;
-      ctx.body = { message: "Data deleted successfully" };
-    })
-    .then((_) => {
-      fs.unlink(`${dirPath}/${date}.xlsx`, (err) => {
-        if (err) throw err;
-        console.log("File Delete");
-      });
-    })
-    .catch((err) => {
-      console.error(err);
-      ctx.status = 500;
-      ctx.body = { message: err.message };
-    });
+  const filePath = `${dirPath}/${date}.xlsx`;
+
+  try {
+    const [playerStatsResult, matchResult] = await Promise.all([
+      PlayerStats.deleteOne({ date: date }),
+      Match.deleteOne({ date: date }),
+    ]);
+
+    fs.unlinkSync(filePath);
+    ctx.status = 200;
+    ctx.body = { message: "Data deleted successfully" };
+  } catch (err) {
+    console.error(err);
+    ctx.status = 500;
+    ctx.body = { message: err.message };
+  }
+});
+
+//initial collection
+router.get("/stats", async (ctx, next) => {
+  try {
+    Player.create(players);
+    ctx.status = 200;
+    ctx.body = "add";
+  } catch (error) {
+    ctx.status = 500;
+    ctx.body = { message: err.message };
+  }
 });
 
 module.exports = router;
