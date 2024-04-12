@@ -205,6 +205,9 @@ router.get("/matches", async (ctx, next) => {
       totalPassAccuracy: 0,
       totalWinNum: 0,
       totalDrawNum: 0,
+      totalPossession: 0,
+      totalYellowCards: 0,
+      totalShortOnTarget: 0,
     };
 
     const matchData = await Match.find().sort({ date: 1 });
@@ -214,6 +217,11 @@ router.get("/matches", async (ctx, next) => {
       accumulator.totalRedCards += currentValue.stats.red_cards;
       accumulator.totalPasses += currentValue.stats.passes;
       accumulator.totalPassAccuracy += currentValue.stats.pass_accuracy;
+      accumulator.totalPossession += currentValue.stats.possession;
+      accumulator.totalYellowCards += currentValue.stats.yellow_cards;
+      accumulator.totalShortOnTarget += currentValue.stats.shots_on_target;
+
+      // accumulator.totalDefence += currentValue.stats.tackle+currentValue.stats.;
       if (currentValue.result === "win") {
         accumulator.totalWinNum++;
       } else if (currentValue.result === "draw") {
@@ -226,6 +234,15 @@ router.get("/matches", async (ctx, next) => {
       statsSummary.totalPassAccuracy / matchData.length;
     statsSummary.averagePassNum = Math.round(
       statsSummary.totalPasses / matchData.length
+    );
+    statsSummary.averagePossession = Math.round(
+      statsSummary.totalPossession / matchData.length
+    );
+    statsSummary.averageYellowCards = Math.round(
+      statsSummary.totalYellowCards / matchData.length
+    );
+    statsSummary.averageShortOnTarget = Math.round(
+      statsSummary.totalShortOnTarget / matchData.length
     );
     ctx.status = 200;
     ctx.body = { match: matchData, summary: statsSummary };
