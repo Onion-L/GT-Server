@@ -11,7 +11,7 @@ async function authMiddleware(ctx, next) {
   } catch (err) {
     ctx.status = 401;
     ctx.body = {
-      message: "Authentication failed, please log in again",
+      message: "Authentication failed",
     };
   }
 }

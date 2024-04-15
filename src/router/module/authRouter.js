@@ -1,9 +1,9 @@
 const Router = require("koa-router");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const User = require("../model/userModel.js");
-const { validateEmail, validatePassword } = require("../utils/valid.js");
-const generateSecureToken = require("../utils/token.js");
+const User = require("../../model/userModel.js");
+const { validateEmail, validatePassword } = require("../../utils/valid.js");
+const generateSecureToken = require("../../utils/token.js");
 
 const router = new Router();
 
@@ -58,7 +58,7 @@ router.post("/register", async (ctx, next) => {
 });
 
 router.post("/login", async (ctx, next) => {
-  const { username, password, isRemembered } = ctx.request.body;
+  const { username, password } = ctx.request.body;
   if (!username || !password) {
     ctx.status = 400;
     ctx.body = { message: "Username or password cannot be empty" };
@@ -77,18 +77,8 @@ router.post("/login", async (ctx, next) => {
     return;
   }
   const token = jwt.sign({ data: user }, process.env.SECRET_KEY, {
-    expiresIn: "7d",
+    expiresIn: "1d",
   });
-
-  //{TODO}
-  if (isRemembered) {
-    const rememberToken = generateSecureToken();
-    ctx.cookies.set("user", rememberToken, {
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-      httpOnly: true,
-      sameSite: "None",
-    });
-  }
 
   ctx.status = 200;
   ctx.body = {
