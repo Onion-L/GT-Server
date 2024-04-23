@@ -79,7 +79,7 @@ router.get("/matches", async (ctx, next) => {
 // delete match data
 router.delete("/match", async (ctx) => {
   const date = ctx.request.query.date;
-  const dirPath = path.join(__dirname, "../uploads");
+  const dirPath = path.join(__dirname, "../../uploads");
   const filePath = `${dirPath}/${date}.xlsx`;
 
   try {

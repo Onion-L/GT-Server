@@ -21,12 +21,12 @@ const refreshTokenMiddleware = async (ctx, next) => {
 function tokenNeedsRefresh(token) {
   const now = Date.now() / 1000;
   const decoded = jwt.decode(token);
-  return decoded.exp < now + 3000;
+  return decoded.exp < now + 300;
 }
 
 async function refreshToken(decoded) {
   const newToken = jwt.sign({ data: decoded.data }, process.env.SECRET_KEY, {
-    expiresIn: "7d",
+    expiresIn: "1d",
   });
   return newToken;
 }

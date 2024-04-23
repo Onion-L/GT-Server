@@ -28,14 +28,23 @@ router.use(taskRouter.routes(), taskRouter.allowedMethods());
 router.use(matchRouter.routes(), matchRouter.allowedMethods());
 
 router.post("/upload", upload.single("match"), async (ctx, next) => {
+  console.log("Start processing:", new Date());
   const { home, date, away, result, possession } = ctx.request.body;
   const matchData = await fileReader(date);
-  for (const match of matchData) {
-    const player = await Player.findOne({ name: match.name });
-    const newData = updatePlayerStats(player, match);
-    await Player.updateOne({ name: match.name }, { stats: newData.stats });
-  }
+  console.log("After File Read:", new Date());
 
+  const playerNames = matchData.map((match) => match.name);
+  const players = await Player.find({ name: { $in: playerNames } }).lean();
+
+  const playerMap = new Map(players.map((player) => [player.name, player]));
+  const updatePromises = matchData.map((match) => {
+    const player = playerMap.get(match.name);
+    const newData = updatePlayerStats(player, match);
+    return Player.updateOne({ name: match.name }, { stats: newData.stats });
+  });
+  await Promise.all(updatePromises);
+
+  console.log("After Player Data Updated:", new Date());
   const initialStats = {
     goals: 0,
     assists: 0,
@@ -77,6 +86,7 @@ router.post("/upload", upload.single("match"), async (ctx, next) => {
   totalStats.pass_accuracy = Math.round(
     totalStats.total_pass_accuracy / totalStats.total_appearances
   );
+  console.log("After data caculated:", new Date());
 
   const commonData = {
     date,
@@ -95,6 +105,7 @@ router.post("/upload", upload.single("match"), async (ctx, next) => {
     }),
   ])
     .then((result) => {
+      console.log("Finish:", new Date());
       ctx.status = 200;
       ctx.body = "File uploaded successfully";
     })

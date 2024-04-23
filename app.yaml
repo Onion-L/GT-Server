@@ -1,0 +1,19 @@
+runtime: nodejs18 
+service: backend 
+env: flex
+
+automatic_scaling:
+  min_num_instances: 1
+  max_num_instances: 3
+
+env_variables:
+  MONGO_DB: 'mongodb+srv://XiangLi:qseawdzxc111@cluster0.dyjb751.mongodb.net/GTServerDB?retryWrites=true&w=majority'
+  SECRET_KEY: '832ca008da8b84eb80666db275187670510debbbd7f3e8cd8ba7ca4b5ede5578'
+  API_TOKEN: 'D93f3kNK7vFTnugXQ5NhD0g3Ou8QNZoXY7H2ynMRTX5drowBZhaTMI2sVgB4'
+
+resources:
+  cpu: 1
+  memory_gb: 1
+  disk_size_gb: 10
+
+entrypoint: 'node app.js'

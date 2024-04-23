@@ -1,6 +1,6 @@
 module.exports = {
-  origin: "*",
-  methods: "GET, POST, PUT, DELETE",
+  origin: "https://gametrack-61220.ew.r.appspot.com",
+  allowMethods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true,
-  headers: "Content-Type,Authorization",
+  allowHeaders: ["Content-Type", "Authorization"],
 };
