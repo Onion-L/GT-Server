@@ -20,11 +20,19 @@ To install **GT Server**, ensure that Node.js and MongoDB are installed on your 
 1. Clone the repository:
 
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/Onion-L/GT-Server
    cd GT-Server
    ```
 
-2. Install dependencies:
+2. env
+
+```bash
+MONGO_DB='MongoDB Key' 
+SECRET_KEY='your secret key'
+API_TOKEN='your token'
+```
+
+3. Install dependencies:
 
    ```bash
    npm install
